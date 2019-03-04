@@ -1,13 +1,11 @@
 from sklearn.model_selection import train_test_split
 
 import numpy as np
-import pandas as pd
 from numpy import newaxis
 import matplotlib.pyplot as plt
 from data_utils import load_data, create_dataset, reshape_data
 from train import train_lstm
 from sklearn.preprocessing import MinMaxScaler
-from Convolutional_Neural_Networks.cnn_homework_solution import prediction
 
 
 def plot_results_multiple(predicted_data, true_data):

@@ -26,20 +26,15 @@ def predict_sequences_full(model, curr_frame, prediction_length, scaler):
         curr_frame = np.insert(curr_frame, timesteps-1, predicted[-1], axis=0)
     return predicted
 
-def predict_sequences_multiple(model, data, timesteps, prediction_len, scaler):
+def predict_sequences_multiple(model, data, timesteps, scaler):
     """
     predict a sequence of prediction_len predictions and then shifting the input sequence to prediction_len steps forward
     """
     prediction_seqs = []
-    for i in range(len(data)//prediction_len):
-        curr_frame = data[i*prediction_len]
-        predicted = []
-        for _ in range(prediction_len):
-            prediction = scaler.inverse_transform(model.predict(curr_frame[newaxis,:,:]))[0,0]
-            predicted.append(prediction)
-            curr_frame = curr_frame[1:]
-            curr_frame = np.insert(curr_frame, timesteps-1, predicted[-1], axis=0)
-        prediction_seqs.append(predicted)
+    for i in range(len(data)-timesteps):
+        curr_frame = data[i:i+timesteps,:]
+        prediction = scaler.inverse_transform(model.predict(curr_frame[newaxis,:,:]))[0,0]
+        prediction_seqs.append(prediction)
     return prediction_seqs
 
 
@@ -55,11 +50,9 @@ X_train, y_train = create_dataset(train_scaled, look_back=timesteps)
 X_train = reshape_data(X_train)
 
 model = train_lstm(X_train, y_train)
-prediction_length = len(test)
 data_total = np.concatenate([train, test])
 inputs = data_total[len(data_total)-len(test)-timesteps:]
 inputs = scaler.transform(inputs)
 inputs = inputs.reshape((-1,1))
-X_test=inputs[-timesteps:]
-predictions = predict_sequences_full(model, X_test, prediction_length, scaler)
+predictions = predict_sequences_multiple(model, inputs, timesteps, scaler)
 plot_results_multiple(predictions, test)

@@ -28,7 +28,7 @@ def predict_sequences_full(model, curr_frame, prediction_length, scaler):
 
 def predict_sequences_multiple(model, data, timesteps, scaler):
     """
-    predict a sequence of prediction_len predictions and then shifting the input sequence to prediction_len steps forward
+    predict a sequence of prediction_len predictions and then shifting the input sequence one time step forward
     """
     prediction_seqs = []
     for i in range(len(data)-timesteps):

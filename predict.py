@@ -1,11 +1,13 @@
 from sklearn.model_selection import train_test_split
 
 import numpy as np
+import pandas as pd
 from numpy import newaxis
 import matplotlib.pyplot as plt
 from data_utils import load_data, create_dataset, reshape_data
 from train import train_lstm
 from sklearn.preprocessing import MinMaxScaler
+from Convolutional_Neural_Networks.cnn_homework_solution import prediction
 
 
 def plot_results_multiple(predicted_data, true_data):
@@ -44,20 +46,22 @@ def predict_sequences_multiple(model, data, timesteps, prediction_len, scaler):
 
 
 stock_prices = load_data(filename="HistoricalQuotes.csv")
-scaler = MinMaxScaler(feature_range=(0, 1))
-stock_prices = scaler.fit_transform(stock_prices)
 
 train, test = train_test_split(stock_prices, test_size = 0.2, random_state = 0)
+scaler = MinMaxScaler(feature_range=(0, 1))
+train_scaled = scaler.fit_transform(train)
+
 
 timesteps = 5
-X_train, y_train = create_dataset(train, look_back=timesteps)
+X_train, y_train = create_dataset(train_scaled, look_back=timesteps)
 X_train = reshape_data(X_train)
 
 model = train_lstm(X_train, y_train)
-X_test, y_test = create_dataset(test, look_back=timesteps)
-X_test = reshape_data(X_test)
-
-prediction_length = len(y_test)
-predictions = predict_sequences_full(model, X_test[0], prediction_length, scaler)
-y_test = scaler.inverse_transform(y_test)
-plot_results_multiple(predictions, y_test)
+prediction_length = len(test)
+data_total = np.concatenate([train, test])
+inputs = data_total[len(data_total)-len(test)-timesteps:]
+inputs = scaler.transform(inputs)
+inputs = inputs.reshape((-1,1))
+X_test=inputs[-timesteps:]
+predictions = predict_sequences_full(model, X_test, prediction_length, scaler)
+plot_results_multiple(predictions, test)
